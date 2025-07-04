@@ -2,7 +2,6 @@ from itertools import count
 import time
 import json
 Clean_logs = []
-flagged_Ips = []
 
 with open ("generated_access.log","r") as f:
     for line in f.readlines():
@@ -24,6 +23,7 @@ def view_logs():
 
 
 def bruteforce_attack():
+    ac = False
     attempts = {}
     for i in Clean_logs:
         ip = i["IP"]
@@ -32,49 +32,60 @@ def bruteforce_attack():
                 attempts[ip] = 1
             else:
                 attempts[ip] += 1
-    for ip, count in attempts.items():
-        if count > 3:
-            print(f"Suspicious IP: {ip} with {count} failed attempts")
-            flagged_Ips.append(ip)
-        else:
-            print("Nothing Suspicious here")
+    if attempts:     
+        for ip, count in attempts.items():
+            if count > 3:
+                ac = True
+                print(f"Suspicious IP: {ip} with {count} failed attempts")
 
+    if ac == False:
+        print("No Breach Found!")
+        
 def Suspicious_URL_Access():
     suspicious_paths = ["/admin", "/wp-login", "/phpmyadmin", "/.env", "/shell", "/config"]
+    ac = False
+
     for i in Clean_logs:
-        url_t = {}
         ip = i["IP"]
         if i["Endpoint"] in suspicious_paths:
-            url_t[ip] = i["Endpoint"]
+            ac = True
             print(f"{ip} Tried to Access '{i['Endpoint']}' on {i['Data and Time']}")
-            flagged_Ips.append(ip)
-        else:
-            print("Nothing Suspicious here")
+
+
+    if ac == False:
+        print("No Breach Found!")
+        
 
 
 def suspicious_Method():
     suspicious_methods = ["PUT", "DELETE", "OPTIONS", "TRACE", "CONNECT"]
+    ac = False
     for i in Clean_logs:
         ip = i["IP"]
         if i["Method"] in suspicious_methods:
+            ac = True
             print(f"{ip} Tried Method {i['Method']} on Endpoint {i['Endpoint']}")
-        else:
-            print("Nothing Suspicious here")
+
+    if ac == False:
+        print("No Breach Found!")
+
 
 
 def FloodAttack():
     rqst = {}
+    suspicious_found = False  
+
     for i in Clean_logs:
         ip = i["IP"]
-        if ip not in rqst:
-            rqst[ip] = 1
-        else:
-            rqst[ip] += 1
-    for key,value in rqst.items():
+        rqst[ip] = rqst.get(ip, 0) + 1
+
+    for key, value in rqst.items():
         if value > 100:
             print(f"{key} Sent {value} Requests to the Server")
-    else:
-        print("Nothing Suspicious here")
+            suspicious_found = True
+
+    if suspicious_found == False:
+        print("No breach Found!")
 
 
 def main():
