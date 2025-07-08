@@ -70,22 +70,26 @@ def suspicious_Method():
         print("No Breach Found!")
 
 
-
 def FloodAttack():
-    rqst = {}
-    suspicious_found = False  
+    ac = False
+    attempts = {}
 
     for i in Clean_logs:
         ip = i["IP"]
-        rqst[ip] = rqst.get(ip, 0) + 1
+        if ip not in attempts:
+            attempts[ip] = 1
+        else:
+            attempts[ip] += 1
 
-    for key, value in rqst.items():
-        if value > 100:
-            print(f"{key} Sent {value} Requests to the Server")
-            suspicious_found = True
+    if attempts:
+        for ip, count in attempts.items():
+            if count > 100:
+                ac = True
+                print(f"{ip} Sent {count} Requests to the Server")
 
-    if suspicious_found == False:
-        print("No breach Found!")
+    if ac == False:
+        print("No Breach Found!")
+
 
 
 def main():
